@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HIMI - DEMO</title>
+</head>
+<body>
+    <style>
+        #container{
+            position:relative;
+            width:800px;
+            margin:0 auto;
+            font-size:5rem;
+            font-family:  Helvetica, sans-serif;
+            text-align: center;
+        }
+    </style>
+    <div id="container">
+        <span id="timer">00:00:00</span><br>
+        <input type="button" value="Restart" onclick="resetTimer()">
+    </div>  
+    <script>
+        var ws;
+        function connect(){
+            ws = new WebSocket(`ws://${document.location.host}`)
+            ws.onopen = function(){
+            }
+            ws.onmessage = function(evt){
+                updateTimer(new Date(Number(evt.data)));
+            }
+            ws.onclose = function(evt){
+                connect();
+            }
+        }
+        function resetTimer(){
+            try{
+                ws.send("reset");
+            }catch(err){
+                console.log(err);
+                setTimeout(resetTimer,100);
+            }
+        }
+        function updateTimer(time){
+            document.getElementById('timer').innerHTML = 
+            `${time.getMinutes()}:${pad(time.getSeconds(),2)}:${pad(time.getMilliseconds(),3)}`;
+        }
+        function pad(n, width, z) {
+            z = z || '0';
+            n = n + '';
+            return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+        }
+        connect();
+    </script>
+</body>
+</html>
